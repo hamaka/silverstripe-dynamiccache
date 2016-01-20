@@ -1,6 +1,3 @@
----
-Name: dynamiccacheextensions
----
 SiteTree:
   extensions:
     - 'DynamicCacheDataObjectExtension'
@@ -10,3 +7,9 @@ SiteConfig:
 Page_Controller:
   extensions:
     - 'DynamicCacheControllerExtension'
+Item:
+  extensions:
+    - 'DynamicCacheDataObjectExtension'
+ItemText:
+  extensions:
+    - 'DynamicCacheDataObjectExtension'

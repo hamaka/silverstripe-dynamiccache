@@ -10,7 +10,7 @@ server heavy operations such as database access.
 ## Requirements
 
  * SilverStripe 3.0 or above
- * PHP 5.4
+ * PHP 5.3
 
 ## How it works
 
@@ -33,6 +33,12 @@ Whenever a page is published the entire cache is cleared for the sake of robustn
 This module will allow individual pages to opt-out of caching by specifying certain headers,
 and will ignore caching on ajax pages or direct requests to controllers (including 
 form submissions) by checking for any url-segments that start with an uppercase letter.
+
+## Security warning
+
+Please note that this module DISABLES CSRF in order to allow cached forms to function
+between user sessions. This may be fixed in a future release (perhaps by substituting
+CSRF values during retrieval of cached pages).
 
 ## Installation Instructions
 
@@ -60,8 +66,6 @@ See [dynamiccache.yml](_config/dynamiccache.yml) for the list of configurable op
  * optOutHeader - (null|string) If a header should be used to explicitly disable
    caching for a cache, set the regular expression here which will be used to
    match the specified header. E.g. '/^X\-DynamicCache\-OptOut/'
- * optInResponseCodes - (null|array) Status codes that should be cached
- * optOutResponseCodes - (null|array) Status codes that should not be cached
  * responseHeader - (null|string) Header prefix to use for reporting cache results
  * optInURL - (null|string) If caching should be limited only to specified urls
    set the regular expression here which will be used to match those urls
@@ -73,10 +77,6 @@ See [dynamiccache.yml](_config/dynamiccache.yml) for the list of configurable op
    content for different hostname, but still uses the same backend, such as the
    subsites module
  * enableAjax - (boolean) Determine if caching should be enabled during ajax
- * cacheDir - (string) Directory where file-based caches are stored 
-   (either absolute, or relative to TEMP_FOLDER).
-   Allows usage of %BASE_PATH% and %ASSETS_PATH% placeholders.
-   Please ensure that the folder is either located outside of the webroot, or appropriately secured.
  * cacheDuration - (null|integer) Duration of the page cache, in seconds (default is 1 hour).
  * cacheHeaders - (null|string) Determines which headers should also be cached.
    X-Include-CSS and other relevant headers can be essential in instructing the
@@ -117,17 +117,11 @@ mobile / non-mobile users (assuming silverstripe/mobile module is installed).
 
 ```php
 
-	class CacheCustomisation extends DynamicCacheExtension {
+	CacheCustomisation extends DynamicCacheExtension {
 		public function updateEnabled(&$enabled) {
-			// Disable caching for this request if a user is logged in
-			if (Member::currentUserID()) $enabled = false;
-
-			// Disable caching for this request if in dev mode
-			elseif (Director::isDev()) $enabled = false;
-
-			// Disable caching for this request if we have a message to display
-			// or the request shouldn't be cached for other reasons
-			elseif (Session::get('StatusMessage') || Session::get('Uncachable')) $enabled = false;
+			if(Session::get('Uncachable') {
+				$enabled = false; // Disable caching for this request
+			}
 		}
 
 		public function updateCacheKeyFragments(array &$fragments) {
